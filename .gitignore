@@ -1,0 +1,20 @@
+# Database and Container Data
+data/
+mysql_data/
+webdata/
+pgadmin/
+
+# Configs and Secrets
+.env
+php/wp-config.php
+
+# WordPress Uploads
+php/wp-content/uploads/
+
+# Python/Odoo Artifacts
+__pycache__/
+*.pyc
+
+# System & Logs
+.DS_Store
+*.log
