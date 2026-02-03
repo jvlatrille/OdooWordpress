@@ -86,11 +86,11 @@ add_action('admin_enqueue_scripts', 'add_plugins_scripts');
 /**
  * Charge le code métier quand les plugins sont chargés
  */
+
 add_action('plugins_loaded', 'loadOdooBridge');
 
 function loadOdooBridge()
 {
-    require_once ODOOBRIDGE_DIR . 'OdooPrimitive.php';
-    require_once ODOOBRIDGE_DIR . 'back.php';
-    require_once ODOOBRIDGE_DIR . 'front.php';
+    require_once __DIR__ . '/back.php';
+    require_once __DIR__ . '/front.php';
 }
