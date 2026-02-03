@@ -79,3 +79,41 @@ add_action('personal_options_update', 'odoobridge_save_custom_user_profile_apike
 
 add_action('edit_user_profile', 'odoobridge_add_custom_user_profile_apikey');
 add_action('edit_user_profile_update', 'odoobridge_save_custom_user_profile_apikey');
+
+add_action('init', 'odoobridge_traiter_formulaire_demande');
+
+function odoobridge_traiter_formulaire_demande()
+{
+    if (!isset($_POST['odoobridge_demande'])) {
+        return;
+    }
+
+    if (!is_user_logged_in()) {
+        set_transient('odoobridge_erreur', "Tu dois être connecté.", 30);
+        odoobridge_redirect_resultat('ko');
+    }
+
+    if (!isset($_POST['odoobridge_nonce']) || !wp_verify_nonce($_POST['odoobridge_nonce'], 'demandeImplantation')) {
+        set_transient('odoobridge_erreur', "Nonce invalide.", 30);
+        odoobridge_redirect_resultat('ko');
+    }
+
+    require_once __DIR__ . '/OdooPrimitive.php';
+
+    $implant_id = isset($_POST['implant_id']) ? intval($_POST['implant_id']) : 0;
+    $date = isset($_POST['date_reservation']) ? sanitize_text_field($_POST['date_reservation']) : '';
+    $duree = isset($_POST['duree_reservation']) ? intval($_POST['duree_reservation']) : 0;
+
+    $resultat = creerDemandeImplantation($implant_id, $date, $duree);
+
+    odoobridge_redirect_resultat($resultat !== false ? 'ok' : 'ko');
+}
+
+function odoobridge_redirect_resultat($etat)
+{
+    $page = get_page_by_path('odooreservation', OBJECT, 'page');
+    $url = $page ? get_permalink($page->ID) : home_url('/');
+
+    wp_safe_redirect(add_query_arg(['odooBridge' => $etat], $url));
+    exit;
+}
