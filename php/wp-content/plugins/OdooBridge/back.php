@@ -1,5 +1,6 @@
 <?php
 
+// ----------- ADMIN OPTIONS -----------
 function odoobridge_administration_add_admin_page()
 {
     add_submenu_page(
@@ -27,7 +28,7 @@ function odoobridge_administration_page()
     $url_actuel = get_option('urlOdoo');
     ?>
     <div class="wrap OdooBridge OdooBridgeBack">
-        <h1>Mes options</h1>
+        <h1>Options OdooBridge</h1>
         <form method="post" action="">
             <label for="dbOdoo">Nom base Odoo :</label>
             <input class="input" id="dbOdoo" name="dbOdoo" value="<?php echo esc_attr($db_actuel); ?>">
@@ -40,9 +41,10 @@ function odoobridge_administration_page()
     </div>
     <?php
 }
-
 add_action('admin_menu', 'odoobridge_administration_add_admin_page');
 
+
+// ----------- USER PROFILE API KEY -----------
 function odoobridge_add_custom_user_profile_apikey($user)
 {
     printf(
@@ -70,23 +72,36 @@ function odoobridge_save_custom_user_profile_apikey($user_id)
     if (!current_user_can('edit_user', $user_id))
         return false;
 
-    $odooapikey = isset($_POST['odooapikey']) ? $_POST['odooapikey'] : '';
+    $odooapikey = isset($_POST['odooapikey']) ? sanitize_text_field($_POST['odooapikey']) : '';
     update_user_meta($user_id, 'odooapikey', $odooapikey);
 }
 
 add_action('show_user_profile', 'odoobridge_add_custom_user_profile_apikey');
 add_action('personal_options_update', 'odoobridge_save_custom_user_profile_apikey');
-
 add_action('edit_user_profile', 'odoobridge_add_custom_user_profile_apikey');
 add_action('edit_user_profile_update', 'odoobridge_save_custom_user_profile_apikey');
 
-add_action('init', 'odoobridge_traiter_formulaire_demande');
+
+// ----------- REDIRECT HELPER -----------
+function odoobridge_redirect_resultat($etat)
+{
+    $page = get_page_by_path('odooreservation', OBJECT, 'page');
+    $url = $page ? get_permalink($page->ID) : home_url('/');
+
+    wp_safe_redirect(add_query_arg(['odooBridge' => $etat], $url));
+    exit;
+}
+
+
+// ----------- FORM HANDLER (FRONT POST) -----------
+add_action('template_redirect', 'odoobridge_traiter_formulaire_demande');
 
 function odoobridge_traiter_formulaire_demande()
 {
-    if (!isset($_POST['odoobridge_demande'])) {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST')
         return;
-    }
+    if (!isset($_POST['odoobridge_demande']))
+        return;
 
     if (!is_user_logged_in()) {
         set_transient('odoobridge_erreur', "Tu dois être connecté.", 30);
@@ -100,20 +115,17 @@ function odoobridge_traiter_formulaire_demande()
 
     require_once __DIR__ . '/OdooPrimitive.php';
 
-    $implant_id = isset($_POST['implant_id']) ? intval($_POST['implant_id']) : 0;
-    $date = isset($_POST['date_reservation']) ? sanitize_text_field($_POST['date_reservation']) : '';
-    $duree = isset($_POST['duree_reservation']) ? intval($_POST['duree_reservation']) : 0;
+    $implant_id = isset($_POST['implant_id']) ? absint($_POST['implant_id']) : 0;
 
-    $resultat = creerDemandeImplantation($implant_id, $date, $duree);
+    // accepte les 2 noms (si t’as encore des vieux forms)
+    $date_implantation = '';
+    if (isset($_POST['date_implantation'])) {
+        $date_implantation = sanitize_text_field($_POST['date_implantation']);
+    } elseif (isset($_POST['date_reservation'])) {
+        $date_implantation = sanitize_text_field($_POST['date_reservation']);
+    }
 
-    odoobridge_redirect_resultat($resultat !== false ? 'ok' : 'ko');
-}
+    $resultat = creerDemandeImplantation($implant_id, $date_implantation);
 
-function odoobridge_redirect_resultat($etat)
-{
-    $page = get_page_by_path('odooreservation', OBJECT, 'page');
-    $url = $page ? get_permalink($page->ID) : home_url('/');
-
-    wp_safe_redirect(add_query_arg(['odooBridge' => $etat], $url));
-    exit;
+    odoobridge_redirect_resultat($resultat ? 'ok' : 'ko');
 }

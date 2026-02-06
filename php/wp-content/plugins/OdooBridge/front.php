@@ -62,7 +62,6 @@ function listeImplantsDispo($content)
         }
 
         $id_date = "date_" . $id_implant;
-        $id_duree = "duree_" . $id_implant;
 
         $moncontenu .= "
         <article class='card'>
@@ -89,13 +88,8 @@ function listeImplantsDispo($content)
                         <input type='hidden' name='implant_id' value='" . esc_attr($id_implant) . "'>
 
                         <div class='champ'>
-                            <label for='" . esc_attr($id_date) . "'>Date</label>
-                            <input type='date' name='date_reservation' id='" . esc_attr($id_date) . "' required>
-                        </div>
-
-                        <div class='champ'>
-                            <label for='" . esc_attr($id_duree) . "'>Durée (jours)</label>
-                            <input type='number' name='duree_reservation' id='" . esc_attr($id_duree) . "' min='1' required>
+                            <label for='" . esc_attr($id_date) . "'>Date & heure</label>
+                            <input type='datetime-local' name='date_implantation' id='" . esc_attr($id_date) . "' required>
                         </div>
 
                         <button class='bouton' type='submit' name='odoobridge_demande' value='1'>Envoyer</button>

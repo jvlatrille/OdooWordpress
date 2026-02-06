@@ -26,6 +26,8 @@ function odooConnect()
     return $common->authenticate($odoo_db, $odoo_username, $odoo_apikey, array());
 }
 
+
+
 function getAllImplants()
 {
     global $odoo_url, $odoo_db, $odoo_apikey;
@@ -114,8 +116,29 @@ function getClientIdCourant($uid)
     return (int) $id_cree;
 }
 
+function normaliser_datetime_odoo($val)
+{
+    $val = trim((string) $val);
 
-function creerDemandeImplantation($implant_id, $date_reservation, $duree_reservation)
+    // input type="date" -> YYYY-MM-DD
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
+        return $val . ' 00:00:00';
+    }
+
+    // input type="datetime-local" -> YYYY-MM-DDTHH:MM
+    if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $val)) {
+        return str_replace('T', ' ', $val) . ':00';
+    }
+
+    // déjà au bon format ?
+    if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $val)) {
+        return $val;
+    }
+
+    return '';
+}
+
+function creerDemandeImplantation($implant_id, $date_implantation)
 {
     global $odoo_url, $odoo_db, $odoo_apikey;
 
@@ -125,12 +148,11 @@ function creerDemandeImplantation($implant_id, $date_reservation, $duree_reserva
             throw new Exception("Connexion Odoo impossible (options / clé API / email).");
         }
 
-        $implant_id = intval($implant_id);
-        $duree_reservation = intval($duree_reservation);
-        $date_reservation = sanitize_text_field($date_reservation);
+        $implant_id = (int) $implant_id;
+        $date_implantation = normaliser_datetime_odoo(sanitize_text_field($date_implantation));
 
-        if ($implant_id <= 0 || $duree_reservation <= 0 || $date_reservation === '') {
-            throw new Exception("Champs invalides.");
+        if ($implant_id <= 0 || $date_implantation === '') {
+            throw new Exception("Champs invalides (implant/date).");
         }
 
         $client_id = getClientIdCourant($uid);
@@ -140,18 +162,21 @@ function creerDemandeImplantation($implant_id, $date_reservation, $duree_reserva
 
         $models = ripcord::client($odoo_url . "/xmlrpc/2/object");
 
-        // ATTENTION : si tes champs s’appellent différemment dans cyberware.implantation,
-        // c’est ICI qu’on ajustera (client_id / implant_id / date / durée)
         $valeurs = [
-            'client_id' => $client_id,
-            'implant_id' => $implant_id,
-            'date_implantation' => $date_reservation,
-            'duree' => $duree_reservation,
+            'client_id' => (int) $client_id,
+            'implant_id' => (int) $implant_id,
+            'date_implantation' => $date_implantation,
+
+            // optionnel, mais je préfère être explicite :
+            'charcudoc_id' => (int) $uid,
+
+            // optionnel : ton model a un default "planifie"
+            // 'state' => 'planifie',
         ];
 
         $id_cree = $models->execute_kw(
             $odoo_db,
-            $uid,
+            (int) $uid,
             $odoo_apikey,
             'cyberware.implantation',
             'create',
@@ -159,52 +184,6 @@ function creerDemandeImplantation($implant_id, $date_reservation, $duree_reserva
         );
 
         return $id_cree;
-    } catch (Exception $e) {
-        set_transient('odoobridge_erreur', $e->getMessage(), 30);
-        return false;
-    }
-}
-
-function addReservationImplant($implant_id, $date_reservation, $duree_reservation)
-{
-    global $odoo_url, $odoo_db, $odoo_apikey;
-
-    try {
-        $uid = odooConnect();
-        if (empty($uid)) {
-            throw new Exception("Connexion Odoo impossible.");
-        }
-
-        $implant_id = (int) $implant_id;
-        $duree_reservation = (int) $duree_reservation;
-        $date_reservation = sanitize_text_field($date_reservation);
-
-        if ($implant_id <= 0 || $duree_reservation <= 0 || $date_reservation === '') {
-            throw new Exception("Champs invalides.");
-        }
-
-        $client_id = getClientIdCourant($uid); // auto-create si besoin ✅
-        if ($client_id <= 0) {
-            throw new Exception("Impossible de créer / récupérer le client.");
-        }
-
-        $models = ripcord::client($odoo_url . "/xmlrpc/2/object");
-
-        $valeurs = [
-            'client_id' => $client_id,
-            'implant_id' => $implant_id,
-            'date_implantation' => $date_reservation,
-            'duree' => $duree_reservation,
-        ];
-
-        return $models->execute_kw(
-            $odoo_db,
-            $uid,
-            $odoo_apikey,
-            'cyberware.implantation',
-            'create',
-            [$valeurs]
-        );
 
     } catch (Exception $e) {
         set_transient('odoobridge_erreur', $e->getMessage(), 30);
