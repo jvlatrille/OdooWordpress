@@ -117,12 +117,11 @@ function cybercrud_handle_posts()
     if ($action === 'create') {
         $nom_client = sanitize_text_field($_POST['cybercrud_nom_client'] ?? '');
         $pseudo = sanitize_text_field($_POST['cybercrud_pseudo'] ?? '');
-        $user_id = absint($_POST['cybercrud_user_id'] ?? 0);
         $implants = isset($_POST['cybercrud_implants']) && is_array($_POST['cybercrud_implants'])
             ? array_map('absint', $_POST['cybercrud_implants'])
             : [];
 
-        $id = cybercrud_odoo_create_client($nom_client, $pseudo, $user_id, $implants);
+        $id = cybercrud_odoo_create_client($nom_client, $pseudo, $implants);
         cybercrud_redirect($id ? 'ok' : 'ko');
     }
 
@@ -130,12 +129,11 @@ function cybercrud_handle_posts()
         $client_id = absint($_POST['cybercrud_client_id'] ?? 0);
         $nom_client = sanitize_text_field($_POST['cybercrud_nom_client'] ?? '');
         $pseudo = sanitize_text_field($_POST['cybercrud_pseudo'] ?? '');
-        $user_id = absint($_POST['cybercrud_user_id'] ?? 0);
         $implants = isset($_POST['cybercrud_implants']) && is_array($_POST['cybercrud_implants'])
             ? array_map('absint', $_POST['cybercrud_implants'])
             : [];
 
-        $ok = cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $user_id, $implants);
+        $ok = cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $implants);
         cybercrud_redirect($ok ? 'ok' : 'ko');
     }
 

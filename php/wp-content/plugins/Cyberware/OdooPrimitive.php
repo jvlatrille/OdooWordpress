@@ -125,7 +125,7 @@ function cybercrud_odoo_implants_all()
 
 /* ====== CRUD ====== */
 
-function cybercrud_odoo_create_client($nom_client, $pseudo, $user_id, $implant_ids)
+function cybercrud_odoo_create_client($nom_client, $pseudo, $implant_ids)
 {
     try {
         [$apikey, $db, $uid] = cybercrud_odoo_ctx();
@@ -140,8 +140,7 @@ function cybercrud_odoo_create_client($nom_client, $pseudo, $user_id, $implant_i
         $vals = [
             'nom_client' => $nom_client,
             'pseudo' => $pseudo,
-            'user_id' => $user_id ?: false,
-            // M2M: (6, 0, ids) = set complet
+            'user_id' => (int) $uid,
             'implant_ids' => [[6, 0, array_values(array_filter($implant_ids))]],
             'actif' => true,
         ];
@@ -153,7 +152,7 @@ function cybercrud_odoo_create_client($nom_client, $pseudo, $user_id, $implant_i
     }
 }
 
-function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $user_id, $implant_ids)
+function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $implant_ids)
 {
     try {
         [$apikey, $db, $uid] = cybercrud_odoo_ctx();
@@ -169,7 +168,6 @@ function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $user_id
         $vals = [
             'nom_client' => $nom_client,
             'pseudo' => $pseudo,
-            'user_id' => $user_id ?: false,
             'implant_ids' => [[6, 0, array_values(array_filter($implant_ids))]],
         ];
 

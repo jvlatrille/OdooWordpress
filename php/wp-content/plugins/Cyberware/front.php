@@ -83,18 +83,6 @@ function cybercrud_render_clients_page($content)
           <label>Pseudo</label>
           <input name='cybercrud_pseudo' placeholder='alias'>
         </div>
-
-        <div class='field'>
-          <label>User (lié)</label>
-          <select name='cybercrud_user_id'>
-            <option value=''>-- aucun --</option>";
-    foreach ($users as $u) {
-        $nom = $u['name'] ?? ($u['login'] ?? '');
-        $html .= "<option value='" . (int) $u['id'] . "'>" . esc_html($nom) . "</option>";
-    }
-    $html .= "</select>
-        </div>
-
         <div class='field full'>
           <label>Implants (N-N)</label>
           <div class='chips'>";
@@ -169,9 +157,6 @@ function cybercrud_render_clients_page($content)
             <div class='stat'><span>Essence</span><b>" . (int) $ess_util . " / " . (int) $ess_max . "</b></div>
             <div class='stat'><span>Restante</span><b>" . (int) $ess_rest . "</b></div>
           </div>
-
-          <div class='line'><span>Compte Odoo</span><b>" . esc_html($user_label) . "</b></div>
-
           <div class='implants'>
             <div class='label'>Implants</div>
             <div class='chips small'>";
@@ -209,20 +194,6 @@ function cybercrud_render_clients_page($content)
                   <label>Pseudo</label>
                   <input name='cybercrud_pseudo' value='" . esc_attr($pseudo) . "'>
                 </div>
-
-                <div class='field'>
-                  <label>User</label>
-                  <select name='cybercrud_user_id'>
-                    <option value=''>-- aucun --</option>";
-        foreach ($users as $u) {
-            $uid = (int) $u['id'];
-            $nomu = $u['name'] ?? ($u['login'] ?? '');
-            $sel = ($uid === $user_id) ? "selected" : "";
-            $html .= "<option value='{$uid}' {$sel}>" . esc_html($nomu) . "</option>";
-        }
-        $html .= "</select>
-                </div>
-
                 <div class='field full'>
                   <label>Implants</label>
                   <div class='chips'>";
