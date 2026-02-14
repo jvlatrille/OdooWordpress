@@ -6,14 +6,14 @@ if (!class_exists('ripcord')) {
     require_once __DIR__ . '/ripcord/ripcord.php';
 }
 
-function cybercrud_odoo_connect()
+function cyberwareclient_odoo_connect()
 {
-    $url = get_option('cybercrud_urlOdoo', '');
-    $db = get_option('cybercrud_dbOdoo', '');
+    $url = get_option('cyberwareclient_urlOdoo', '');
+    $db = get_option('cyberwareclient_dbOdoo', '');
 
     $wp_user = wp_get_current_user();
     $username = $wp_user->user_email ?? '';
-    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cybercrud_odooapikey', true) : '';
+    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareclient_odooapikey', true) : '';
 
     if ($url === '' || $db === '' || $username === '' || $apikey === '')
         return 0;
@@ -23,28 +23,26 @@ function cybercrud_odoo_connect()
     return (int) $common->authenticate($db, $username, $apikey, []);
 }
 
-function cybercrud_odoo_object()
+function cyberwareclient_odoo_object()
 {
-    $url = get_option('cybercrud_urlOdoo', '');
+    $url = get_option('cyberwareclient_urlOdoo', '');
     return ripcord::client($url . "/xmlrpc/2/object");
 }
 
-function cybercrud_odoo_ctx()
+function cyberwareclient_odoo_ctx()
 {
     $wp_user = wp_get_current_user();
-    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cybercrud_odooapikey', true) : '';
-    return [$apikey, get_option('cybercrud_dbOdoo', ''), (int) cybercrud_odoo_connect()];
+    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareclient_odooapikey', true) : '';
+    return [$apikey, get_option('cyberwareclient_dbOdoo', ''), (int) cyberwareclient_odoo_connect()];
 }
 
-/* ====== LISTE + PAGINATION + SEARCH ====== */
-
-function cybercrud_odoo_clients_count($recherche)
+function cyberwareclient_odoo_clients_count($recherche)
 {
-    [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+    [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
     if (!$uid)
         return 0;
 
-    $obj = cybercrud_odoo_object();
+    $obj = cyberwareclient_odoo_object();
 
     $domain = [];
     $recherche = trim((string) $recherche);
@@ -55,13 +53,13 @@ function cybercrud_odoo_clients_count($recherche)
     return (int) $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_count', [$domain]);
 }
 
-function cybercrud_odoo_clients_page($page, $recherche)
+function cyberwareclient_odoo_clients_page($page, $recherche)
 {
-    [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+    [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
     if (!$uid)
         return false;
 
-    $obj = cybercrud_odoo_object();
+    $obj = cyberwareclient_odoo_object();
 
     $page = max(1, (int) $page);
     $limit = 10;
@@ -98,44 +96,40 @@ function cybercrud_odoo_clients_page($page, $recherche)
     return $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_read', [], $kwargs);
 }
 
-/* ====== Données pour <select> et N-N ====== */
 
-function cybercrud_odoo_users_for_select()
+function cyberwareclient_odoo_users_for_select()
 {
-    [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+    [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
     if (!$uid)
         return false;
 
-    $obj = cybercrud_odoo_object();
-    // on prend juste quelques users pour l’exo, sinon ça peut être énorme
+    $obj = cyberwareclient_odoo_object();
     $kwargs = ['fields' => ['id', 'login', 'name'], 'limit' => 200, 'order' => 'id asc'];
     return $obj->execute_kw($db, $uid, $apikey, 'res.users', 'search_read', [[]], $kwargs);
 }
 
-function cybercrud_odoo_implants_all()
+function cyberwareclient_odoo_implants_all()
 {
-    [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+    [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
     if (!$uid)
         return false;
 
-    $obj = cybercrud_odoo_object();
+    $obj = cyberwareclient_odoo_object();
     $kwargs = ['fields' => ['id', 'nom_implant'], 'limit' => 500, 'order' => 'nom_implant asc'];
     return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [[]], $kwargs);
 }
 
-/* ====== CRUD ====== */
-
-function cybercrud_odoo_create_client($nom_client, $pseudo, $implant_ids)
+function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, $image_b64 = '')
 {
     try {
-        [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+        [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
         if (!$uid)
             throw new Exception("Connexion Odoo impossible.");
 
         if (trim($nom_client) === '')
             throw new Exception("nom_client obligatoire.");
 
-        $obj = cybercrud_odoo_object();
+        $obj = cyberwareclient_odoo_object();
 
         $vals = [
             'nom_client' => $nom_client,
@@ -145,17 +139,21 @@ function cybercrud_odoo_create_client($nom_client, $pseudo, $implant_ids)
             'actif' => true,
         ];
 
+        if (!empty($image_b64)) {
+            $vals['image_client'] = $image_b64;
+        }
+
         return (int) $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'create', [$vals]);
     } catch (Exception $e) {
-        set_transient('cybercrud_erreur', $e->getMessage(), 30);
+        set_transient('cyberwareclient_erreur', $e->getMessage(), 30);
         return 0;
     }
 }
 
-function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $implant_ids)
+function cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $implant_ids, $image_b64 = '')
 {
     try {
-        [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+        [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
         if (!$uid)
             throw new Exception("Connexion Odoo impossible.");
         if ($client_id <= 0)
@@ -163,7 +161,7 @@ function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $implant
         if (trim($nom_client) === '')
             throw new Exception("nom_client obligatoire.");
 
-        $obj = cybercrud_odoo_object();
+        $obj = cyberwareclient_odoo_object();
 
         $vals = [
             'nom_client' => $nom_client,
@@ -171,34 +169,37 @@ function cybercrud_odoo_update_client($client_id, $nom_client, $pseudo, $implant
             'implant_ids' => [[6, 0, array_values(array_filter($implant_ids))]],
         ];
 
+        if (!empty($image_b64)) {
+            $vals['image_client'] = $image_b64;
+        }
+
         return (bool) $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'write', [[(int) $client_id], $vals]);
     } catch (Exception $e) {
-        set_transient('cybercrud_erreur', $e->getMessage(), 30);
+        set_transient('cyberwareclient_erreur', $e->getMessage(), 30);
         return false;
     }
 }
 
-function cybercrud_odoo_delete_client($client_id)
+function cyberwareclient_odoo_delete_client($client_id)
 {
     try {
-        [$apikey, $db, $uid] = cybercrud_odoo_ctx();
+        [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
         if (!$uid)
             throw new Exception("Connexion Odoo impossible.");
         if ($client_id <= 0)
             throw new Exception("Client invalide.");
 
-        $obj = cybercrud_odoo_object();
+        $obj = cyberwareclient_odoo_object();
         return (bool) $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'unlink', [[(int) $client_id]]);
     } catch (Exception $e) {
-        set_transient('cybercrud_erreur', $e->getMessage(), 30);
+        set_transient('cyberwareclient_erreur', $e->getMessage(), 30);
         return false;
     }
 }
 
-function cybercrud_image_src($binaire)
+function cyberwareclient_image_src($binaire)
 {
     if (empty($binaire))
         return '';
-    // Odoo renvoie déjà du base64 dans les search_read
     return "data:image/png;base64," . $binaire;
 }

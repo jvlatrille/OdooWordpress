@@ -4,7 +4,7 @@ if (!defined('ABSPATH'))
 
 require_once __DIR__ . '/OdooPrimitive.php';
 
-function cybercrud_render_clients_page($content)
+function cyberwareclient_render_clients_page($content)
 {
     if (!is_page('cybercrud-clients'))
         return $content;
@@ -15,13 +15,12 @@ function cybercrud_render_clients_page($content)
 
     $html = "<div class='cybercrud-ui'>";
 
-    // messages
     if ($etat === 'ok') {
-        $html .= "<div class='toast ok'>Action OK.</div>";
+        $html .= "<div class='toast ok' id='cyber-toast'>Action OK.</div><script>setTimeout(() => document.getElementById('cyber-toast')?.remove(), 3000);</script>";
     } elseif ($etat === 'ko') {
-        $erreur = get_transient('cybercrud_erreur');
+        $erreur = get_transient('cyberwareclient_erreur');
         $html .= "<div class='toast ko'>Erreur : " . esc_html($erreur ?: 'action impossible') . "</div>";
-        delete_transient('cybercrud_erreur');
+        delete_transient('cyberwareclient_erreur');
     }
 
     if (!is_user_logged_in()) {
@@ -29,15 +28,15 @@ function cybercrud_render_clients_page($content)
         return $html;
     }
 
-    $total = cybercrud_odoo_clients_count($q);
-    $clients = cybercrud_odoo_clients_page($page, $q);
+    $total = cyberwareclient_odoo_clients_count($q);
+    $clients = cyberwareclient_odoo_clients_page($page, $q);
 
     if ($clients === false) {
         $html .= "<div class='panel danger'>
             Connexion Odoo impossible. Vérifie :
             <ul>
-              <li>Options CyberwareCRUD : urlOdoo + dbOdoo</li>
-              <li>Profil WP : CyberwareCRUD Odoo API key</li>
+              <li>Options CyberwareClient : urlOdoo + dbOdoo</li>
+              <li>Profil WP : CyberwareClient Odoo API key</li>
               <li>Email WP = login Odoo</li>
             </ul>
         </div></div>";
@@ -46,11 +45,8 @@ function cybercrud_render_clients_page($content)
 
     $nb_pages = max(1, (int) ceil($total / 10));
 
-    // données select + implants
-    $users = cybercrud_odoo_users_for_select() ?: [];
-    $implants = cybercrud_odoo_implants_all() ?: [];
-
-    // header
+    $users = cyberwareclient_odoo_users_for_select() ?: [];
+    $implants = cyberwareclient_odoo_implants_all() ?: [];
     $html .= "
       <div class='topbar'>
         <div class='titre'>
@@ -66,46 +62,64 @@ function cybercrud_render_clients_page($content)
       </div>
     ";
 
-    // form create
-    $html .= "<section class='panel'>
-      <h2>Ajouter un client</h2>
-
-      <form class='form-grid' method='post'>
-        " . wp_nonce_field('cybercrud_clients', 'cybercrud_nonce', true, false) . "
-        <input type='hidden' name='cybercrud_action' value='create'>
-
-        <div class='field'>
-          <label>Nom</label>
-          <input required name='cybercrud_nom_client' placeholder='Valerie'>
+    $html .= "
+    <section class='panel create-panel'>
+    <details class='create-accordion'>
+        <summary class='create-summary'>
+        <div class='create-left'>
+            <span class='create-title'>Ajouter un client</span>
+            <span class='create-hint'>Clique pour ouvrir</span>
         </div>
+        <span class='create-plus' aria-hidden='true'>+</span>
+        </summary>
 
-        <div class='field'>
-          <label>Pseudo</label>
-          <input name='cybercrud_pseudo' placeholder='alias'>
-        </div>
-        <div class='field full'>
-          <label>Implants (N-N)</label>
-          <div class='chips'>";
+        <div class='create-body'>
+        <form class='form-grid cybercrud-form' method='post' enctype='multipart/form-data'>
+            " . wp_nonce_field('cyberwareclient_clients', 'cyberwareclient_nonce', true, false) . "
+            <input type='hidden' name='cyberwareclient_action' value='create'>
+
+            <div class='field'>
+            <label>Nom</label>
+            <input required name='cyberwareclient_nom_client' placeholder='Valerie' autocomplete='name'>
+            </div>
+
+            <div class='field'>
+            <label>Pseudo</label>
+            <input name='cyberwareclient_pseudo' placeholder='alias' autocomplete='nickname'>
+            </div>
+
+            <div class='field'>
+            <label>Photo</label>
+            <input type='file' name='cyberwareclient_image_client' accept='image/*'>
+            <div class='mini-help'>PNG/JPG/WebP • max 2MB</div>
+            </div>
+
+            <div class='field full'>
+            <label>Implants</label>
+            <div class='chips chips-scroll'>";
     foreach ($implants as $imp) {
         $iid = (int) $imp['id'];
         $label = $imp['nom_implant'] ?? ('Implant #' . $iid);
         $html .= "
-                  <label class='chip'>
-                    <input type='checkbox' name='cybercrud_implants[]' value='{$iid}'>
-                    <span>" . esc_html($label) . "</span>
-                  </label>
-                ";
+                <label class='chip'>
+                <input type='checkbox' name='cyberwareclient_implants[]' value='{$iid}'>
+                <span>" . esc_html($label) . "</span>
+                </label>
+            ";
     }
-    $html .= "</div>
-        </div>
+    $html .= "
+            </div>
+            </div>
 
-        <div class='actions full'>
-          <button class='btn primary' type='submit'>Créer</button>
+            <div class='actions full actions-row'>
+            <button class='btn primary' type='submit'>Créer</button>
+            <button class='btn' type='reset'>Reset</button>
+            </div>
+        </form>
         </div>
-      </form>
+    </details>
     </section>";
 
-    // cards grid
     $html .= "<section class='grid'>";
 
     foreach ($clients as $c) {
@@ -127,10 +141,9 @@ function cybercrud_render_clients_page($content)
 
         $selected_implants = isset($c['implant_ids']) && is_array($c['implant_ids']) ? array_map('intval', $c['implant_ids']) : [];
 
-        // photo
         $img_src = '';
         if (!empty($c['image_client'])) {
-            $img_src = cybercrud_image_src($c['image_client']);
+            $img_src = cyberwareclient_image_src($c['image_client']);
         }
 
         $initiale = mb_strtoupper(mb_substr($nom ?: 'C', 0, 1));
@@ -163,7 +176,6 @@ function cybercrud_render_clients_page($content)
         if (count($selected_implants) === 0) {
             $html .= "<span class='empty'>aucun</span>";
         } else {
-            // on transforme la liste d’ids en noms via $implants (petit mapping)
             $map_implants = [];
             foreach ($implants as $imp) {
                 $map_implants[(int) $imp['id']] = $imp['nom_implant'] ?? ('Implant #' . (int) $imp['id']);
@@ -180,19 +192,23 @@ function cybercrud_render_clients_page($content)
             <summary class='btn ghost'>Modifier / Supprimer</summary>
 
             <div class='drawer-body'>
-              <form class='form-grid' method='post'>
-                " . wp_nonce_field('cybercrud_clients', 'cybercrud_nonce', true, false) . "
-                <input type='hidden' name='cybercrud_action' value='update'>
-                <input type='hidden' name='cybercrud_client_id' value='" . $id . "'>
+              <form class='form-grid' method='post' enctype='multipart/form-data'>
+                " . wp_nonce_field('cyberwareclient_clients', 'cyberwareclient_nonce', true, false) . "
+                <input type='hidden' name='cyberwareclient_action' value='update'>
+                <input type='hidden' name='cyberwareclient_client_id' value='" . $id . "'>
 
                 <div class='field'>
                   <label>Nom</label>
-                  <input required name='cybercrud_nom_client' value='" . esc_attr($nom) . "'>
+                  <input required name='cyberwareclient_nom_client' value='" . esc_attr($nom) . "'>
                 </div>
 
                 <div class='field'>
                   <label>Pseudo</label>
-                  <input name='cybercrud_pseudo' value='" . esc_attr($pseudo) . "'>
+                  <input name='cyberwareclient_pseudo' value='" . esc_attr($pseudo) . "'>
+                </div>
+                <div class='field'>
+                    <label>Photo (remplacer)</label>
+                    <input type='file' name='cyberwareclient_image_client' accept='image/*'>
                 </div>
                 <div class='field full'>
                   <label>Implants</label>
@@ -203,7 +219,7 @@ function cybercrud_render_clients_page($content)
             $checked = in_array($iid, $selected_implants, true) ? "checked" : "";
             $html .= "
                           <label class='chip'>
-                            <input type='checkbox' name='cybercrud_implants[]' value='{$iid}' {$checked}>
+                            <input type='checkbox' name='cyberwareclient_implants[]' value='{$iid}' {$checked}>
                             <span>" . esc_html($label) . "</span>
                           </label>
                         ";
@@ -217,9 +233,9 @@ function cybercrud_render_clients_page($content)
               </form>
 
               <form method='post' class='delete' onsubmit=\"return confirm('Supprimer ce client ?');\">
-                " . wp_nonce_field('cybercrud_clients', 'cybercrud_nonce', true, false) . "
-                <input type='hidden' name='cybercrud_action' value='delete'>
-                <input type='hidden' name='cybercrud_client_id' value='" . $id . "'>
+                " . wp_nonce_field('cyberwareclient_clients', 'cyberwareclient_nonce', true, false) . "
+                <input type='hidden' name='cyberwareclient_action' value='delete'>
+                <input type='hidden' name='cyberwareclient_client_id' value='" . $id . "'>
                 <button class='btn danger' type='submit'>Supprimer</button>
               </form>
             </div>
@@ -230,7 +246,6 @@ function cybercrud_render_clients_page($content)
 
     $html .= "</section>";
 
-    // pagination
     if ($nb_pages > 1) {
         $html .= "<div class='pagination'>";
         for ($i = 1; $i <= $nb_pages; $i++) {
@@ -245,4 +260,4 @@ function cybercrud_render_clients_page($content)
     return $html;
 }
 
-add_filter('the_content', 'cybercrud_render_clients_page');
+add_filter('the_content', 'cyberwareclient_render_clients_page');
