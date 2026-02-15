@@ -6,22 +6,37 @@ if (!class_exists('ripcord')) {
     require_once __DIR__ . '/ripcord/ripcord.php';
 }
 
+function cyberwareclient_est_fault($rep)
+{
+    return is_array($rep) && isset($rep['faultCode']);
+}
+
 function cyberwareclient_odoo_connect()
 {
     $url = get_option('cyberwareclient_urlOdoo', '');
     $db = get_option('cyberwareclient_dbOdoo', '');
 
     $wp_user = wp_get_current_user();
-    $username = $wp_user->user_email ?? '';
-    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareclient_odooapikey', true) : '';
+    $username_email = trim((string) ($wp_user->user_email ?? ''));
+    $username_login = trim((string) ($wp_user->user_login ?? ''));
+    $apikey = trim((string) ($wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareclient_odooapikey', true) : ''));
 
-    if ($url === '' || $db === '' || $username === '' || $apikey === '')
+    if ($url === '' || $db === '' || $apikey === '')
         return 0;
 
     $common = ripcord::client($url . "/xmlrpc/2/common");
     $common->version();
-    return (int) $common->authenticate($db, $username, $apikey, []);
+
+    $uid = 0;
+    if ($username_email !== '') {
+        $uid = (int) $common->authenticate($db, $username_email, $apikey, []);
+    }
+    if (!$uid && $username_login !== '') {
+        $uid = (int) $common->authenticate($db, $username_login, $apikey, []);
+    }
+    return $uid;
 }
+
 
 function cyberwareclient_odoo_object()
 {
@@ -50,7 +65,12 @@ function cyberwareclient_odoo_clients_count($recherche)
         $domain = ['|', ['nom_client', 'ilike', $recherche], ['pseudo', 'ilike', $recherche]];
     }
 
-    return (int) $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_count', [$domain]);
+    $rep = $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_count', [$domain]);
+    if (cyberwareclient_est_fault($rep)) {
+        set_transient('cyberwareclient_erreur', $rep['faultString'] ?? 'Erreur Odoo', 30);
+        return 0;
+    }
+    return (int) $rep;
 }
 
 function cyberwareclient_odoo_clients_page($page, $recherche)
@@ -72,29 +92,21 @@ function cyberwareclient_odoo_clients_page($page, $recherche)
     }
 
     $kwargs = [
-        'domain' => $domain,
-        'fields' => [
-            'id',
-            'nom_client',
-            'pseudo',
-            'user_id',
-            'implant_ids',
-            'image_client',
-            'date_naissance',
-            'age',
-            'niveau_essence_max',
-            'essence_utilisee',
-            'essence_restante',
-            'actif'
-        ],
-
+        'fields' => ['id', 'nom_client', 'pseudo', 'user_id', 'implant_ids', 'image_client', 'date_naissance', 'age', 'niveau_essence_max', 'essence_utilisee', 'essence_restante', 'actif'],
         'order' => 'id desc',
         'limit' => $limit,
         'offset' => $offset,
     ];
 
-    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_read', [], $kwargs);
+    $rep = $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_read', [$domain], $kwargs);
+    if (cyberwareclient_est_fault($rep)) {
+        set_transient('cyberwareclient_erreur', $rep['faultString'] ?? 'Erreur Odoo', 30);
+        return false;
+    }
+    return $rep;
 }
+
+
 
 
 function cyberwareclient_odoo_users_for_select()
@@ -116,7 +128,13 @@ function cyberwareclient_odoo_implants_all()
 
     $obj = cyberwareclient_odoo_object();
     $kwargs = ['fields' => ['id', 'nom_implant'], 'limit' => 500, 'order' => 'nom_implant asc'];
-    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [[]], $kwargs);
+    $rep = $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_read', [[]], $kwargs);
+    if (cyberwareclient_est_fault($rep)) {
+        set_transient('cyberwareclient_erreur', $rep['faultString'] ?? 'Erreur Odoo', 30);
+        return false;
+    }
+    return $rep;
+
 }
 
 function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, $image_b64 = '')

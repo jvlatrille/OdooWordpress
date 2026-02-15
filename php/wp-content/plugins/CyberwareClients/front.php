@@ -45,7 +45,6 @@ function cyberwareclient_render_clients_page($content)
 
   $nb_pages = max(1, (int) ceil($total / 10));
 
-  $users = cyberwareclient_odoo_users_for_select() ?: [];
   $implants = cyberwareclient_odoo_implants_all() ?: [];
   $html .= "
       <div class='topbar'>

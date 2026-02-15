@@ -12,15 +12,17 @@ function cyberwareimplant_odoo_connect()
     $db = get_option('cyberwareimplant_dbOdoo', '');
 
     $wp_user = wp_get_current_user();
-    $username = $wp_user->user_email ?? '';
-    $apikey = $wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareimplant_odooapikey', true) : '';
-
-    if ($url === '' || $db === '' || $username === '' || $apikey === '')
-        return 0;
+    $username_email = trim((string) ($wp_user->user_email ?? ''));
+    $username_login = trim((string) ($wp_user->user_login ?? ''));
+    $apikey = trim((string) ($wp_user->ID ? get_user_meta($wp_user->ID, 'cyberwareimplant_odooapikey', true) : ''));
 
     $common = ripcord::client($url . "/xmlrpc/2/common");
     $common->version();
-    return (int) $common->authenticate($db, $username, $apikey, []);
+
+    $uid = (int) $common->authenticate($db, $username_email, $apikey, []);
+    if (!$uid)
+        $uid = (int) $common->authenticate($db, $username_login, $apikey, []);
+    return $uid;
 }
 
 function cyberwareimplant_odoo_object()
@@ -71,7 +73,7 @@ function cyberwareimplant_odoo_implants_page($page, $q, $type, $rarete)
 
     $obj = cyberwareimplant_odoo_object();
 
-    $limit = 12;
+    $limit = 10;
     $page = max(1, (int) $page);
     $offset = ($page - 1) * $limit;
 
@@ -85,26 +87,13 @@ function cyberwareimplant_odoo_implants_page($page, $q, $type, $rarete)
         $domain[] = ['rarete', '=', $rarete];
 
     $kwargs = [
-        'domain' => $domain,
-        'fields' => [
-            'id',
-            'nom_implant',
-            'description',
-            'type_implant',
-            'rarete',
-            'prix_euro',
-            'cout_essence',
-            'emplacement',
-            'image_implant',
-            'manufacturer_id',
-            'actif'
-        ],
+        'fields' => ['id', 'nom_implant', 'description', 'type_implant', 'rarete', 'prix_euro', 'cout_essence', 'emplacement', 'image_implant', 'manufacturer_id', 'actif'],
         'order' => 'id desc',
         'limit' => $limit,
         'offset' => $offset,
     ];
 
-    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [], $kwargs);
+    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [$domain], $kwargs);
 }
 
 function cyberwareimplant_odoo_create_implant($vals)
@@ -204,6 +193,6 @@ function cyberwareimplant_odoo_implants_all($q, $type, $rarete)
         'order' => 'id desc',
         'limit' => 0,
     ];
-
-    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [], $kwargs);
+    unset($kwargs['domain']);
+    return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [$domain], $kwargs);
 }

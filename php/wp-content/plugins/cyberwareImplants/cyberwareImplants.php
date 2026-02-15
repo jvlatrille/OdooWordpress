@@ -11,6 +11,7 @@ if (!defined('ABSPATH'))
 require_once __DIR__ . '/back.php';
 require_once __DIR__ . '/front.php';
 
+// Création auto de la page support à l’activation
 register_activation_hook(__FILE__, 'cyberwareimplant_creer_page_support');
 
 function cyberwareimplant_creer_page_support()
@@ -18,10 +19,13 @@ function cyberwareimplant_creer_page_support()
     $slug = 'cyberwareimplants';
     $titre = 'Cyberware Implants';
 
+    // si la page existe déjà -> on fait rien
     $page = get_page_by_path($slug, OBJECT, 'page');
     if ($page) {
         return;
     }
+
+    // sinon on la crée
     wp_insert_post([
         'post_title' => $titre,
         'post_name' => $slug,
