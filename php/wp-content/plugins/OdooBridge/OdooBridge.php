@@ -15,10 +15,6 @@ if (!defined('ABSPATH')) {
 define('ODOOBRIDGE_DIR', plugin_dir_path(__FILE__));
 define('ODOOBRIDGE_URL', plugin_dir_url(__FILE__));
 
-/**
- * Executed when the plugin is activated
- * -> crée la page support "odooreservation" si elle n'existe pas
- */
 function odooBridgeInstall()
 {
     $check_page_exist = get_page_by_path('odooreservation', OBJECT, 'page');
@@ -37,17 +33,12 @@ function odooBridgeInstall()
         );
 
         if (is_wp_error($page_id)) {
-            // en vrai tu le verras pas forcément à l'écran, mais au moins ça évite un silence total
             error_log('OdooBridge: erreur creation page -> ' . $page_id->get_error_message());
         }
     }
 }
 register_activation_hook(__FILE__, 'odooBridgeInstall');
 
-/**
- * Executed when the plugin is deactivated
- * -> supprime la page support
- */
 function odooBridgeUninstall()
 {
     $page = get_page_by_path('odooreservation', OBJECT, 'page');
@@ -57,9 +48,6 @@ function odooBridgeUninstall()
 }
 register_deactivation_hook(__FILE__, 'odooBridgeUninstall');
 
-/**
- * Injecte CSS + JS sur la page support et dans l'admin
- */
 function add_plugins_scripts()
 {
     if (is_page('odooreservation') || is_admin()) {
@@ -83,9 +71,6 @@ function add_plugins_scripts()
 add_action('wp_enqueue_scripts', 'add_plugins_scripts');
 add_action('admin_enqueue_scripts', 'add_plugins_scripts');
 
-/**
- * Charge le code métier quand les plugins sont chargés
- */
 
 add_action('plugins_loaded', 'loadOdooBridge');
 

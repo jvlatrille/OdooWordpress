@@ -4,7 +4,6 @@ if (!defined('ABSPATH'))
 
 require_once __DIR__ . '/OdooPrimitive.php';
 
-/* ===== options ===== */
 function cyberwareimplant_add_admin_page()
 {
     add_submenu_page(
@@ -41,7 +40,6 @@ function cyberwareimplant_admin_page()
     </form></div>';
 }
 
-/* ===== apikey profil ===== */
 function cyberwareimplant_profile_apikey_field($user)
 { ?>
     <h3>CyberwareImplant</h3>
@@ -96,7 +94,6 @@ function cyberwareimplant_fichier_vers_base64($champ)
     return $contenu ? base64_encode($contenu) : '';
 }
 
-/* ===== handle posts ===== */
 function cyberwareimplant_handle_posts()
 {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST')

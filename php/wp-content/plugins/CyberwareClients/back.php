@@ -81,11 +81,9 @@ function cyberwareclient_handle_posts()
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST')
         return;
 
-    // on limite à la page support
     if (!is_page('cyberwareclient'))
         return;
 
-    // sécurité nonce (un seul pour tout)
     if (!isset($_POST['cyberwareclient_nonce']) || !wp_verify_nonce($_POST['cyberwareclient_nonce'], 'cyberwareclient_clients')) {
         set_transient('cyberwareclient_erreur', "Nonce invalide.", 30);
         cyberwareclient_redirect('ko');

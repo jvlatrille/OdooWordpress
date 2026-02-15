@@ -9,7 +9,6 @@ function listeImplantsDispo($content)
 
     $moncontenu = "<div class='OdooBridge'><div class='OdooContent'>";
 
-    // message retour
     if (isset($_GET['odooBridge']) && $_GET['odooBridge'] === 'ok') {
         $moncontenu .= "<div class='odoo-msg ok'>Demande envoyée.</div>";
     } elseif (isset($_GET['odooBridge']) && $_GET['odooBridge'] === 'ko') {

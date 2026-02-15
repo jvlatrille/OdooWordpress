@@ -1,6 +1,5 @@
 <?php
 
-// ----------- ADMIN OPTIONS -----------
 function odoobridge_administration_add_admin_page()
 {
     add_submenu_page(
@@ -43,8 +42,6 @@ function odoobridge_administration_page()
 }
 add_action('admin_menu', 'odoobridge_administration_add_admin_page');
 
-
-// ----------- USER PROFILE API KEY -----------
 function odoobridge_add_custom_user_profile_apikey($user)
 {
     printf(
@@ -81,8 +78,6 @@ add_action('personal_options_update', 'odoobridge_save_custom_user_profile_apike
 add_action('edit_user_profile', 'odoobridge_add_custom_user_profile_apikey');
 add_action('edit_user_profile_update', 'odoobridge_save_custom_user_profile_apikey');
 
-
-// ----------- REDIRECT HELPER -----------
 function odoobridge_redirect_resultat($etat)
 {
     $page = get_page_by_path('odooreservation', OBJECT, 'page');
@@ -92,8 +87,6 @@ function odoobridge_redirect_resultat($etat)
     exit;
 }
 
-
-// ----------- FORM HANDLER (FRONT POST) -----------
 add_action('template_redirect', 'odoobridge_traiter_formulaire_demande');
 
 function odoobridge_traiter_formulaire_demande()
@@ -117,7 +110,6 @@ function odoobridge_traiter_formulaire_demande()
 
     $implant_id = isset($_POST['implant_id']) ? absint($_POST['implant_id']) : 0;
 
-    // accepte les 2 noms (si t’as encore des vieux forms)
     $date_implantation = '';
     if (isset($_POST['date_implantation'])) {
         $date_implantation = sanitize_text_field($_POST['date_implantation']);

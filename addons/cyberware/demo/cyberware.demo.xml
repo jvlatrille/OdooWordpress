@@ -170,5 +170,149 @@
             <field name="image_implant" type="base64" file="cyberware/static/img/secondheart.png"/>
         </record>
 
+    <record id="demo_implant_blood_pump" model="cyberware.implant">
+        <field name="nom_implant">Blood Pump</field>
+        <field name="cout_essence">14</field>
+        <field name="prix_euro">7000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">interne</field>
+        <field name="rarete">rare</field>
+        <field name="manufacturer_id" ref="demo_manuf_biotechnica"/>
+        <field name="description">Injecte instantanément un stimulant de régénération pour restaurer une grosse portion de santé.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/biomonitor.png"/>
+    </record>
+
+    <record id="demo_implant_bioconductor" model="cyberware.implant">
+        <field name="nom_implant">Bioconductor</field>
+        <field name="cout_essence">16</field>
+        <field name="prix_euro">12000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">neural</field>
+        <field name="rarete">epique</field>
+        <field name="manufacturer_id" ref="demo_manuf_zetatech"/>
+        <field name="description">Optimise les réponses nerveuses et accélère la récupération des systèmes embarqués après déclenchement.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/synaptic.png"/>
+    </record>
+
+    <record id="demo_implant_microrotors" model="cyberware.implant">
+        <field name="nom_implant">Microrotors</field>
+        <field name="cout_essence">11</field>
+        <field name="prix_euro">9000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">interne</field>
+        <field name="rarete">rare</field>
+        <field name="manufacturer_id" ref="demo_manuf_militech"/>
+        <field name="description">Micro-actionneurs augmentant la vitesse d’exécution des mouvements et la cadence en combat rapproché.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/kerenzikov.png"/>
+    </record>
+
+    <record id="demo_implant_heal_on_kill" model="cyberware.implant">
+        <field name="nom_implant">Heal-On-Kill</field>
+        <field name="cout_essence">7</field>
+        <field name="prix_euro">6000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">interne</field>
+        <field name="rarete">commun</field>
+        <field name="manufacturer_id" ref="demo_manuf_biotechnica"/>
+        <field name="description">Régule hormones et coagulation : restaure automatiquement un pourcentage de santé après neutralisation.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/biomonitor.png"/>
+    </record>
+
+    <record id="demo_implant_adrenaline_booster" model="cyberware.implant">
+        <field name="nom_implant">Adrenaline Booster</field>
+        <field name="cout_essence">9</field>
+        <field name="prix_euro">8500.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">interne</field>
+        <field name="rarete">rare</field>
+        <field name="manufacturer_id" ref="demo_manuf_militech"/>
+        <field name="description">Décharge d’adrénaline contrôlée : restaure de l’endurance après élimination en mêlée.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/biomonitor.png"/>
+    </record>
+
+    <record id="demo_implant_reflex_tuner" model="cyberware.implant">
+        <field name="nom_implant">Reflex Tuner</field>
+        <field name="cout_essence">14</field>
+        <field name="prix_euro">11000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">neural</field>
+        <field name="rarete">rare</field>
+        <field name="manufacturer_id" ref="demo_manuf_zetatech"/>
+        <field name="description">Assistance d’urgence : ralentit le temps quand la santé passe sous un seuil critique.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/kerenzikov.png"/>
+    </record>
+
+    <record id="demo_implant_cataresist" model="cyberware.implant">
+        <field name="nom_implant">Cataresist</field>
+        <field name="cout_essence">10</field>
+        <field name="prix_euro">5000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">interne</field>
+        <field name="rarete">commun</field>
+        <field name="manufacturer_id" ref="demo_manuf_biotechnica"/>
+        <field name="description">Renforce les défenses internes et réduit l’impact des effets toxiques et chimiques.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/subdermal.png"/>
+    </record>
+
+    <record id="demo_implant_shock_n_awe" model="cyberware.implant">
+        <field name="nom_implant">Shock-N-Awe</field>
+        <field name="cout_essence">18</field>
+        <field name="prix_euro">14000.0</field>
+        <field name="emplacement">torse</field>
+        <field name="type_implant">armure</field>
+        <field name="rarete">epique</field>
+        <field name="manufacturer_id" ref="demo_manuf_arasaka"/>
+        <field name="description">Décharge électrique défensive : peut libérer un choc de zone quand vous subissez des dégâts.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/camo.png"/>
+    </record>
+
+    <record id="demo_implant_pain_editor" model="cyberware.implant">
+        <field name="nom_implant">Pain Editor</field>
+        <field name="cout_essence">22</field>
+        <field name="prix_euro">28000.0</field>
+        <field name="emplacement">torse</field>
+        <field name="type_implant">armure</field>
+        <field name="rarete">légendaire</field>
+        <field name="manufacturer_id" ref="demo_manuf_zetatech"/>
+        <field name="description">Modulateur nociceptif : réduit les dégâts entrants en anesthésiant les signaux de douleur.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/subdermal.png"/>
+    </record>
+
+    <record id="demo_implant_mechatronic_core" model="cyberware.implant">
+        <field name="nom_implant">Mechatronic Core</field>
+        <field name="cout_essence">6</field>
+        <field name="prix_euro">4000.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">neural</field>
+        <field name="rarete">commun</field>
+        <field name="manufacturer_id" ref="demo_manuf_zetatech"/>
+        <field name="description">Analyse des points faibles mécaniques : augmente l’efficacité contre drones, robots et tourelles.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/smartlink.png"/>
+    </record>
+
+    <record id="demo_implant_memory_boost" model="cyberware.implant">
+        <field name="nom_implant">Memory Boost</field>
+        <field name="cout_essence">8</field>
+        <field name="prix_euro">6500.0</field>
+        <field name="emplacement">systeme</field>
+        <field name="type_implant">neural</field>
+        <field name="rarete">rare</field>
+        <field name="manufacturer_id" ref="demo_manuf_zetatech"/>
+        <field name="description">Récupération cognitive : restaure automatiquement des ressources de piratage après neutralisation.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/synaptic.png"/>
+    </record>
+
+    <record id="demo_implant_chitin" model="cyberware.implant">
+        <field name="nom_implant">Chitin</field>
+        <field name="cout_essence">16</field>
+        <field name="prix_euro">18000.0</field>
+        <field name="emplacement">torse</field>
+        <field name="type_implant">armure</field>
+        <field name="rarete">légendaire</field>
+        <field name="manufacturer_id" ref="demo_manuf_biotechnica"/>
+        <field name="description">Coque sous-cutanée ultra résistante : augmente fortement la protection et la survie en combat.</field>
+        <field name="image_implant" type="base64" file="cyberware/static/img/subdermal.png"/>
+    </record>
+
     </data>
 </odoo>

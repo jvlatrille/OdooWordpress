@@ -43,8 +43,6 @@ function cyberwareimplant_image_src($binaire)
     return "data:image/png;base64," . $binaire;
 }
 
-/* ====== LISTE + SEARCH + FILTERS + PAGINATION ====== */
-
 function cyberwareimplant_odoo_implants_count($q, $type, $rarete)
 {
     [$apikey, $db, $uid] = cyberwareimplant_odoo_ctx();
@@ -108,8 +106,6 @@ function cyberwareimplant_odoo_implants_page($page, $q, $type, $rarete)
 
     return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [], $kwargs);
 }
-
-/* ====== CRUD ====== */
 
 function cyberwareimplant_odoo_create_implant($vals)
 {
@@ -206,7 +202,7 @@ function cyberwareimplant_odoo_implants_all($q, $type, $rarete)
             'manufacturer_id'
         ],
         'order' => 'id desc',
-        'limit' => 0, // 0 => pas de limite (Odoo)
+        'limit' => 0,
     ];
 
     return $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [], $kwargs);

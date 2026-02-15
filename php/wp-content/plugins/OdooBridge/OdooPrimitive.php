@@ -72,7 +72,6 @@ function getClientIdCourant($uid)
 
     $models = ripcord::client($odoo_url . "/xmlrpc/2/object");
 
-    // 1) chercher un client déjà lié
     $ids = $models->execute_kw(
         $odoo_db,
         (int) $uid,
@@ -87,7 +86,6 @@ function getClientIdCourant($uid)
         return (int) $ids[0];
     }
 
-    // 2) sinon -> le créer automatiquement
     $wp_user = wp_get_current_user();
     if (empty($wp_user->ID)) {
         return 0;
@@ -120,17 +118,14 @@ function normaliser_datetime_odoo($val)
 {
     $val = trim((string) $val);
 
-    // input type="date" -> YYYY-MM-DD
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
         return $val . ' 00:00:00';
     }
 
-    // input type="datetime-local" -> YYYY-MM-DDTHH:MM
     if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $val)) {
         return str_replace('T', ' ', $val) . ':00';
     }
 
-    // déjà au bon format ?
     if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $val)) {
         return $val;
     }
@@ -167,11 +162,7 @@ function creerDemandeImplantation($implant_id, $date_implantation)
             'implant_id' => (int) $implant_id,
             'date_implantation' => $date_implantation,
 
-            // optionnel, mais je préfère être explicite :
             'charcudoc_id' => (int) $uid,
-
-            // optionnel : ton model a un default "planifie"
-            // 'state' => 'planifie',
         ];
 
         $id_cree = $models->execute_kw(

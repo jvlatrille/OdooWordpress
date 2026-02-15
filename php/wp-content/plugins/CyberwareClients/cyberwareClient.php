@@ -21,9 +21,6 @@ function cyberwareclient_enqueue_assets()
 }
 add_action('wp_enqueue_scripts', 'cyberwareclient_enqueue_assets');
 
-/**
- * Page support auto
- */
 function cyberwareclient_on_activate()
 {
     $slug = 'cyberwareclient';
