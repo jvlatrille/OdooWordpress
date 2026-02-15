@@ -46,6 +46,7 @@ function cyberwareclient_render_clients_page($content)
   $nb_pages = max(1, (int) ceil($total / 10));
 
   $implants = cyberwareclient_odoo_implants_all() ?: [];
+  $users_list = cyberwareclient_odoo_users_for_select() ?: [];
   $html .= "
       <div class='topbar'>
         <div class='titre'>
@@ -85,6 +86,20 @@ function cyberwareclient_render_clients_page($content)
             <div class='field'>
             <label>Pseudo</label>
             <input name='cyberwareclient_pseudo' placeholder='alias' autocomplete='nickname'>
+            </div>
+
+            <div class='field'>
+                <label>Utilisateur lié</label>
+                <select name='cyberwareclient_user_id'>
+                    <option value=''>-- Sélectionner --</option>";
+  $current_val = 0;
+  foreach ($users_list as $u) {
+    $uid_opt = (int) $u['id'];
+    $selected = ($current_val === $uid_opt) ? "selected" : "";
+    $html .= "<option value='{$uid_opt}' {$selected}>" . esc_html($u['name']) . "</option>";
+  }
+  $html .= "
+                </select>
             </div>
 
             <div class='field'>
@@ -204,6 +219,20 @@ function cyberwareclient_render_clients_page($content)
                 <div class='field'>
                   <label>Pseudo</label>
                   <input name='cyberwareclient_pseudo' value='" . esc_attr($pseudo) . "'>
+                </div>
+
+                <div class='field'>
+                    <label>Utilisateur lié</label>
+                    <select name='cyberwareclient_user_id'>
+                        <option value=''>-- Sélectionner --</option>";
+    $current_val = isset($user_id) ? $user_id : 0;
+    foreach ($users_list as $u) {
+      $uid_opt = (int) $u['id'];
+      $selected = ($current_val === $uid_opt) ? "selected" : "";
+      $html .= "<option value='{$uid_opt}' {$selected}>" . esc_html($u['name']) . "</option>";
+    }
+    $html .= "
+                    </select>
                 </div>
                 <div class='field'>
                     <label>Photo (remplacer)</label>

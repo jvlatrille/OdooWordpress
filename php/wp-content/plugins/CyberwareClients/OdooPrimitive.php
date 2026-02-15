@@ -127,17 +127,18 @@ function cyberwareclient_odoo_implants_all()
         return false;
 
     $obj = cyberwareclient_odoo_object();
+
     $kwargs = ['fields' => ['id', 'nom_implant'], 'limit' => 500, 'order' => 'nom_implant asc'];
-    $rep = $obj->execute_kw($db, $uid, $apikey, 'cyberware.client', 'search_read', [[]], $kwargs);
+    $rep = $obj->execute_kw($db, $uid, $apikey, 'cyberware.implant', 'search_read', [[]], $kwargs);
+
     if (cyberwareclient_est_fault($rep)) {
         set_transient('cyberwareclient_erreur', $rep['faultString'] ?? 'Erreur Odoo', 30);
         return false;
     }
     return $rep;
-
 }
 
-function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, $image_b64 = '')
+function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, $image_b64 = '', $target_user_id = 0)
 {
     try {
         [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
@@ -149,10 +150,12 @@ function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, 
 
         $obj = cyberwareclient_odoo_object();
 
+        $final_user_id = ($target_user_id > 0) ? $target_user_id : (int) $uid;
+
         $vals = [
             'nom_client' => $nom_client,
             'pseudo' => $pseudo,
-            'user_id' => (int) $uid,
+            'user_id' => $final_user_id,
             'implant_ids' => [[6, 0, array_values(array_filter($implant_ids))]],
             'actif' => true,
         ];
@@ -168,7 +171,7 @@ function cyberwareclient_odoo_create_client($nom_client, $pseudo, $implant_ids, 
     }
 }
 
-function cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $implant_ids, $image_b64 = '')
+function cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $implant_ids, $image_b64 = '', $target_user_id = 0)
 {
     try {
         [$apikey, $db, $uid] = cyberwareclient_odoo_ctx();
@@ -186,6 +189,10 @@ function cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $i
             'pseudo' => $pseudo,
             'implant_ids' => [[6, 0, array_values(array_filter($implant_ids))]],
         ];
+
+        if ($target_user_id > 0) {
+            $vals['user_id'] = $target_user_id;
+        }
 
         if (!empty($image_b64)) {
             $vals['image_client'] = $image_b64;

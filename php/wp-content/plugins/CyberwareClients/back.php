@@ -99,12 +99,13 @@ function cyberwareclient_handle_posts()
     if ($action === 'create') {
         $nom_client = sanitize_text_field($_POST['cyberwareclient_nom_client'] ?? '');
         $pseudo = sanitize_text_field($_POST['cyberwareclient_pseudo'] ?? '');
+        $user_id_form = absint($_POST['cyberwareclient_user_id'] ?? 0);
         $implants = isset($_POST['cyberwareclient_implants']) && is_array($_POST['cyberwareclient_implants'])
             ? array_map('absint', $_POST['cyberwareclient_implants'])
             : [];
 
         $image_b64 = cyberwareclient_fichier_vers_base64('cyberwareclient_image_client');
-        $id = cyberwareclient_odoo_create_client($nom_client, $pseudo, $implants, $image_b64);
+        $id = cyberwareclient_odoo_create_client($nom_client, $pseudo, $implants, $image_b64, $user_id_form);
         cyberwareclient_redirect($id ? 'ok' : 'ko');
     }
 
@@ -112,12 +113,13 @@ function cyberwareclient_handle_posts()
         $client_id = absint($_POST['cyberwareclient_client_id'] ?? 0);
         $nom_client = sanitize_text_field($_POST['cyberwareclient_nom_client'] ?? '');
         $pseudo = sanitize_text_field($_POST['cyberwareclient_pseudo'] ?? '');
+        $user_id_form = absint($_POST['cyberwareclient_user_id'] ?? 0);
         $implants = isset($_POST['cyberwareclient_implants']) && is_array($_POST['cyberwareclient_implants'])
             ? array_map('absint', $_POST['cyberwareclient_implants'])
             : [];
 
         $image_b64 = cyberwareclient_fichier_vers_base64('cyberwareclient_image_client');
-        $ok = cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $implants, $image_b64);
+        $ok = cyberwareclient_odoo_update_client($client_id, $nom_client, $pseudo, $implants, $image_b64, $user_id_form);
         cyberwareclient_redirect($ok ? 'ok' : 'ko');
     }
 

@@ -67,7 +67,7 @@ function cyberwareimplant_render_implants_page($content)
       </div>
 
       <form class='search' method='get'>
-        <form class='search' method='get' action='" . esc_url(get_permalink(get_page_by_path('cyberwareimplants')->ID)) . "'>
+        <input type='hidden' name='pagename' value='cyberwareimplants'>
         <input type='text' name='q' value='" . esc_attr($q) . "' placeholder='recherche nom'>
         <select name='type' class='mini-select'>";
   foreach ($types as $k => $label) {
@@ -86,7 +86,6 @@ function cyberwareimplant_render_implants_page($content)
     </div>
   ";
 
-  /* CREATE ACCORDION */
   $html .= "
   <section class='panel create-panel'>
     <details class='create-accordion'>
@@ -172,7 +171,6 @@ function cyberwareimplant_render_implants_page($content)
   </section>
   ";
 
-  /* CARDS */
 
   $html .= "<style>
     .cyber-table-wrap { overflow-x: auto; margin-top: 20px; }
@@ -196,7 +194,6 @@ function cyberwareimplant_render_implants_page($content)
     }
   </style>";
 
-  /* TABLE */
   $html .= "<div class='cyber-table-wrap'><table class='cyber-table'>
     <thead>
       <tr>
@@ -326,19 +323,15 @@ function cyberwareimplant_render_implants_page($content)
 
   $html .= "</tbody></table></div>";
 
-  /* PAGINATION */
   if ($nb_pages > 1) {
     $html .= "<div class='pagination'>";
-    // Build query params base
     $params = [
       'q' => $q,
       'type' => $type,
       'rarete' => $rarete,
     ];
-    // Remove empty params to clean URL
     $params = array_filter($params, fn($v) => $v !== '');
 
-    // Page Links
     for ($i = 1; $i <= $nb_pages; $i++) {
       $p = array_merge($params, ['pg' => $i]);
       $url = add_query_arg($p, get_permalink());
