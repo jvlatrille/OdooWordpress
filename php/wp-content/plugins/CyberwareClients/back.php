@@ -82,7 +82,7 @@ function cyberwareclient_handle_posts()
         return;
 
     // on limite à la page support
-    if (!is_page('cybercrud-clients'))
+    if (!is_page('cyberwareclient'))
         return;
 
     // sécurité nonce (un seul pour tout)
@@ -135,8 +135,8 @@ add_action('template_redirect', 'cyberwareclient_handle_posts');
 
 function cyberwareclient_redirect($etat)
 {
-    $url = get_permalink(get_page_by_path('cybercrud-clients')->ID);
-    $url = add_query_arg(['cybercrud' => $etat], $url);
+    $url = get_permalink(get_page_by_path('cyberwareclient')->ID);
+    $url = add_query_arg(['cybercrudclient' => $etat], $url);
     wp_safe_redirect($url);
     exit;
 }

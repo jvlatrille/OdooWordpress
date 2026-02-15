@@ -26,7 +26,7 @@ add_action('wp_enqueue_scripts', 'cyberwareclient_enqueue_assets');
  */
 function cyberwareclient_on_activate()
 {
-    $slug = 'cybercrud-clients';
+    $slug = 'cyberwareclient';
     if (!get_page_by_path($slug)) {
         wp_insert_post([
             'post_title' => 'Cyberware Clients',

@@ -1,6 +1,6 @@
 document.addEventListener('submit', (e) => {
     const form = e.target;
-    if (!form.classList.contains('cybercrud-form')) return;
+    if (!form.classList.contains('cybercrudclient-form')) return;
 
     const action = form.querySelector('input[name="cyberwareclient_action"]')?.value || '';
     if (action !== 'create' && action !== 'update') return;
